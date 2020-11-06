@@ -19,12 +19,14 @@ public:
     explicit HPNetworkSocket(QObject *parent = nullptr);
     virtual ~HPNetworkSocket();
 
-    void initialized(void);
-
     void createConnection(const QString& address, const QString& port, HPNetworkSocket::HP_SOCKET_TYPE socketType);
 
+    void sendData();
+    void readData();
 
+private:
 
+    void initialized(void);
 
 signals:
 
