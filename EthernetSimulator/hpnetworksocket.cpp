@@ -1,8 +1,13 @@
+#include <QTcpServer>
+#include <QMessageBox>
 #include "hpnetworksocket.h"
 
-HPNetworkSocket::HPNetworkSocket(QObject *parent) : QObject(parent)
+HPNetworkSocket::HPNetworkSocket(QObject *parent) :
+    QObject(parent),
+    currentConnectionType_(HP_TCP_SERVER),
+    serverObject_(nullptr)
 {
-
+    initialized();
 }
 
 
@@ -12,19 +17,23 @@ HPNetworkSocket::~HPNetworkSocket()
 }
 
 
-void HPNetworkSocketcreateConnection(const QString& address, const QString& port, HPNetworkSocket::HP_SOCKET_TYPE socketType)
+void HPNetworkSocket::createConnection(const QString& address, const QString& port, HPNetworkSocket::HP_SOCKET_TYPE socketType)
+{
+    /* Sorry, we first only support TCP SERVER, and will be extended later. */
+    if(!serverObject_->listen(QHostAddress(address), port.toUInt()))
+    {
+        QMessageBox::warning(nullptr, QStringLiteral("Warning"), QStringLiteral("Invalid Address or Port, sorry."));
+    }
+}
+
+
+void HPNetworkSocket::sendData(const QByteArray& data)
 {
 
 }
 
 
-void HPNetworkSocket::sendData()
-{
-
-}
-
-
-void HPNetworkSocket::readData()
+QByteArray HPNetworkSocket::readData(void)
 {
 
 }
@@ -32,5 +41,5 @@ void HPNetworkSocket::readData()
 
 void HPNetworkSocket::initialized(void)
 {
-
+    serverObject_ = new QTcpServer(this);
 }

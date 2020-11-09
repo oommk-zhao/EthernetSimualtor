@@ -3,6 +3,12 @@
 
 #include <QObject>
 #include <QString>
+#include <QByteArray>
+
+class QTcpServer;
+
+
+/* First Version, only has TCP Server functionality */
 
 class HPNetworkSocket : public QObject
 {
@@ -21,14 +27,16 @@ public:
 
     void createConnection(const QString& address, const QString& port, HPNetworkSocket::HP_SOCKET_TYPE socketType);
 
-    void sendData();
-    void readData();
+    void sendData(const QByteArray& data);
+    QByteArray readData(void);
 
 private:
 
     void initialized(void);
 
-signals:
+    HP_SOCKET_TYPE currentConnectionType_;
+
+    QTcpServer * serverObject_;
 
 };
 
