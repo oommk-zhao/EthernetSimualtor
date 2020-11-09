@@ -224,8 +224,9 @@ QByteArray HPNetworkDataModel::strToCharU16(const QString& str)
 {
     QByteArray retArray;
 
-    retArray.append(static_cast<char>(str.toUInt()));
     retArray.append(static_cast<char>(str.toUInt() >> 8));
+    retArray.append(static_cast<char>(str.toUInt()));
+
 
     return retArray;
 }
@@ -235,8 +236,9 @@ QByteArray HPNetworkDataModel::strToCharI16(const QString& str)
 {
     QByteArray retArray;
 
-    retArray.append(static_cast<char>(str.toInt()));
     retArray.append(static_cast<char>(str.toInt() >> 8));
+    retArray.append(static_cast<char>(str.toInt()));
+
 
     return retArray;
 }
@@ -246,10 +248,12 @@ QByteArray HPNetworkDataModel::strToCharU32(const QString& str)
 {
     QByteArray retArray;
 
-    retArray.append(static_cast<char>(str.toUInt()));
     retArray.append(static_cast<char>(str.toUInt() >> 8));
-    retArray.append(static_cast<char>(str.toUInt() >> 16));
+    retArray.append(static_cast<char>(str.toUInt()));
+
     retArray.append(static_cast<char>(str.toUInt() >> 24));
+    retArray.append(static_cast<char>(str.toUInt() >> 16));
+
 
     return retArray;
 }
@@ -259,10 +263,11 @@ QByteArray HPNetworkDataModel::strToCharI32(const QString& str)
 {
     QByteArray retArray;
 
-    retArray.append(static_cast<char>(str.toInt()));
     retArray.append(static_cast<char>(str.toInt() >> 8));
-    retArray.append(static_cast<char>(str.toInt() >> 16));
+    retArray.append(static_cast<char>(str.toInt()));
     retArray.append(static_cast<char>(str.toInt() >> 24));
+    retArray.append(static_cast<char>(str.toInt() >> 16));
+
 
     return retArray;
 }
@@ -312,10 +317,11 @@ QString HPNetworkDataModel::U16ToStr(const QByteArray& byteData)
 {
     QString retStr;
 
-    /* to check the sequence */
     uint16_t retVar = 0;
     retVar = static_cast<uint8_t>(byteData[1]) +
-             static_cast<uint8_t>(byteData[0] << 8);
+             (static_cast<uint8_t>(byteData[0]) << 8);
+
+    retStr = QStringLiteral("%1").arg(retVar);
 
     return retStr;
 }
@@ -325,6 +331,12 @@ QString HPNetworkDataModel::I16ToStr(const QByteArray& byteData)
 {
     QString retStr;
 
+    uint16_t retVar = 0;
+    retVar = static_cast<uint8_t>(byteData[1]) +
+             (static_cast<uint8_t>(byteData[0]) << 8);
+
+    retStr = QStringLiteral("%1").arg(static_cast<int16_t>(retVar));
+
     return retStr;
 }
 
@@ -333,6 +345,14 @@ QString HPNetworkDataModel::U32ToStr(const QByteArray& byteData)
 {
     QString retStr;
 
+    uint32_t retVar = 0;
+    retVar = static_cast<uint8_t>(byteData[1]) +
+             (static_cast<uint8_t>(byteData[0]) << 8) +
+            (static_cast<uint8_t>(byteData[3]) << 16) +
+            (static_cast<uint8_t>(byteData[2]) << 24);
+
+    retStr = QStringLiteral("%1").arg(retVar);
+
     return retStr;
 }
 
@@ -340,6 +360,14 @@ QString HPNetworkDataModel::U32ToStr(const QByteArray& byteData)
 QString HPNetworkDataModel::I32ToStr(const QByteArray& byteData)
 {
     QString retStr;
+
+    uint32_t retVar = 0;
+    retVar = static_cast<uint8_t>(byteData[1]) +
+             (static_cast<uint8_t>(byteData[0]) << 8) +
+            (static_cast<uint8_t>(byteData[3]) << 16) +
+            (static_cast<uint8_t>(byteData[2]) << 24);
+
+    retStr = QStringLiteral("%1").arg(static_cast<int32_t>(retVar));
 
     return retStr;
 }

@@ -22,7 +22,8 @@ HPMainController::HPMainController(QObject *parent):
 
     testResult = static_cast<uint8_t>(test[1]) + (static_cast<uint8_t>(test[0]) << 8);
 
-    qDebug() << testResult << endl;
+    bool ok;
+    qDebug() << test.toUInt(&ok, 16) << endl;
     initialize();
 }
 

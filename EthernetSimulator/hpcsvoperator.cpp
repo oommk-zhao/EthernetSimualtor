@@ -1,5 +1,4 @@
 #include <QFile>
-#include <QStringLiteral>
 
 #include "hpcsvoperator.h"
 
