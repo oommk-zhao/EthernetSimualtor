@@ -6,6 +6,8 @@ class HPXmlOperator;
 
 #include <QObject>
 #include <QString>
+#include <QVector>
+#include <QStringList>
 
 class HPImportExportObject : public QObject
 {
@@ -14,8 +16,10 @@ public:
     explicit HPImportExportObject(QObject *parent = nullptr);
     virtual ~HPImportExportObject();
 
-    void importConfigurationFile(const QString& fileName);
-    void exportConfigurationFile(const QString& fileName);
+    bool importConfigurationFile(const QString& fileName);
+    bool exportConfigurationFile(const QString& fileName);
+
+    QVector<QStringList> getDefinedStringList(void);
 
 private:
 

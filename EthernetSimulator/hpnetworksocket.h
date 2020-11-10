@@ -6,6 +6,7 @@
 #include <QByteArray>
 
 class QTcpServer;
+class QTcpSocket;
 
 
 /* First Version, only has TCP Server functionality */
@@ -25,10 +26,20 @@ public:
     explicit HPNetworkSocket(QObject *parent = nullptr);
     virtual ~HPNetworkSocket();
 
-    void createConnection(const QString& address, const QString& port, HPNetworkSocket::HP_SOCKET_TYPE socketType);
+    bool createConnection(const QString& address, const QString& port, HPNetworkSocket::HP_SOCKET_TYPE socketType);
 
-    void sendData(const QByteArray& data);
-    QByteArray readData(void);
+    const QByteArray& getReceivedData(void) const;
+
+signals:
+
+    void signalReadyRead(void);
+
+private slots:
+
+    void slotNewTcpConnected(void);
+
+    void slotSendData(const QByteArray& data);
+    void slotReadData(void);
 
 private:
 
@@ -36,7 +47,13 @@ private:
 
     HP_SOCKET_TYPE currentConnectionType_;
 
+    QByteArray receivedData_;
+    QByteArray toSendData_;
+
     QTcpServer * serverObject_;
+    QTcpSocket * tcpSocketToRead_;
+
+    QTcpSocket * tcpSocketObject_;
 
 };
 

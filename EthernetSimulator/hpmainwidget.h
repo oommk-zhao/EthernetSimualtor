@@ -28,21 +28,26 @@ public:
     void initialize(void);
     void showScreen(void);
 
+    void initializeRawDataWidget(void);
+
     void initializeLocalDataWidget(const QVector<QStringList>& initializedList);
     void updateWidget(const QStringList& dataList);
     void pushRawData(const QByteArray& byteArrayData);
     QVector<QStringList> getDataList(void);
 
+    QString getIPAddress(void) const;
+    QString getPort(void) const;
+    QString getConnectionType(void) const;
+    int getRefreshTime(void) const;
+
 signals:
 
-    void signalUpdateWidget(void);
-    void singalRequestImport(void);
+    void singalRequestImport(QString);
+    void signalRequestConnect(void);
 
 private slots:
 
-    void slotConnectButtonReleased(void);
-
-    void slotRefreshTimeOut(void);
+    void slotImportReleaed(void);
 
 private:
 
@@ -56,7 +61,7 @@ private:
     const int valueLabelHeight_;
     const int nameValueBlockWidth_;
 
-    QTimer * refreshTimer_p;
+    const int defaultRawLabelCount_;
 
     QLabel * addressLabel_p;
     QLineEdit * addressLEdit_p;
@@ -72,10 +77,12 @@ private:
     QTabWidget * dataViewTabWidget_p;
 
     QWidget * localDataWidget_p;
+    QWidget * rawDataWidget_p;
     QVector<QWidget *> connectedSocketWidget_p;
 
     QVector<QString> localNameLabelList_;
     QVector<QLineEdit *> localValueEditList_;
+    QVector<QLabel *> rawDataLabelList_;
 
 
 

@@ -5,6 +5,8 @@
 #include <QTabWidget>
 #include <QStringList>
 #include <QTimer>
+#include <QFileDialog>
+#include <QDebug>
 
 #include "hpmainwidget.h"
 
@@ -19,7 +21,7 @@ HPMainWidget::HPMainWidget(QWidget *parent)
       valueLabelWidth_(165),
       valueLabelHeight_(25),
       nameValueBlockWidth_(255),
-      refreshTimer_p(nullptr),
+      defaultRawLabelCount_(160),
       addressLabel_p(nullptr),
       addressLEdit_p(nullptr),
       portLabel_p(nullptr),
@@ -33,9 +35,11 @@ HPMainWidget::HPMainWidget(QWidget *parent)
       exportButton_p(nullptr),
       dataViewTabWidget_p(nullptr),
       localDataWidget_p(nullptr),
+      rawDataWidget_p(nullptr),
       connectedSocketWidget_p(),
       localNameLabelList_(),
-      localValueEditList_()
+      localValueEditList_(),
+      rawDataLabelList_()
 {
     this->setWindowTitle(QObject::tr("Ethernet Simulator"));
     //this->setGeometry(0, 0, 1024, 768);
@@ -114,11 +118,15 @@ void HPMainWidget::initialize(void)
     localDataWidget_p->setObjectName(QStringLiteral("localDataWidget_p"));
     localDataWidget_p->setGeometry(0, 0, 945, 570);
 
-    refreshTimer_p = new QTimer(this);
+    rawDataWidget_p = new QWidget(dataViewTabWidget_p);
+    rawDataWidget_p->setObjectName(QStringLiteral("rawDataWidget_p"));
+    rawDataWidget_p->setGeometry(0, 0, 945, 570);
+    rawDataWidget_p->hide();
 
-    connect(refreshTimer_p, SIGNAL(timeout()), this, SLOT(slotRefreshTimeOut()));
-    connect(importButton_p, SIGNAL(released()), this, SIGNAL(singalRequestImport));
-    connect(connectButton_p, SIGNAL(released()), this, SLOT(slotConnectButtonReleased()));
+    connect(importButton_p, SIGNAL(released()), this, SLOT(slotImportReleaed()));
+    connect(connectButton_p, SIGNAL(released()), this, SIGNAL(signalRequestConnect()));
+
+    initializeRawDataWidget();
 }
 
 
@@ -128,49 +136,78 @@ void HPMainWidget::showScreen(void)
 }
 
 
+void HPMainWidget::initializeRawDataWidget(void)
+{
+    int xShift = 0;
+    int yShift = 0;
+    for(int i = 0; i < defaultRawLabelCount_; i++)
+    {
+        xShift = i % 8;
+        yShift = i / 8;
+        QLabel * rawLabel_p = new QLabel(rawDataWidget_p);
+        rawLabel_p->setGeometry(20 + (xShift * 115 + 15), 8 + (yShift * 25 + 5), 100, 15);
+        rawLabel_p->setText(QStringLiteral("0000"));
+        rawLabel_p->show();
+        rawDataLabelList_.push_back(rawLabel_p);
+    }
+}
+
+
 void HPMainWidget::initializeLocalDataWidget(const QVector<QStringList>& initializedList)
 {
     QString varName;
     QString varDefaultValue;
+
     int count = 0;
+    int xShift = 0;
+    int yShift = 0;
+
     localValueEditList_.clear();
     localNameLabelList_.clear();
 
     for(auto eachList : initializedList)
     {
+        xShift = count % 3;
+        yShift = count / 3;
+
         varName.clear();
         varDefaultValue.clear();
 
-        for(auto var : eachList)
-        {
-            varName = var.at(nameIndex_);
-            varDefaultValue = var.at(defaultValueIndex_);
+        varName = eachList.at(nameIndex_);
+        varDefaultValue = eachList.at(defaultValueIndex_);
 
-            QLabel * varNameLabel = new QLabel(localDataWidget_p);
-            varNameLabel->setGeometry(45 + (count * (nameValueBlockWidth_ + 45)) ,
-                                                                10 + (count * (nameLabelHeight_ + 10)),
-                                                                nameLabelWidth_, nameLabelHeight_);
-            varNameLabel->setText(varName);
-            varNameLabel->setObjectName(varName);
+        QLabel * varNameLabel = new QLabel(localDataWidget_p);
+        varNameLabel->setGeometry(45 + (xShift * (nameValueBlockWidth_ + 45)) ,
+                                                            10 + (yShift * (nameLabelHeight_ + 10)),
+                                                            nameLabelWidth_, nameLabelHeight_);
+        varNameLabel->setText(varName);
+        varNameLabel->setObjectName(varName);
+        varNameLabel->show();
 
-            QLineEdit * varValueLabel = new QLineEdit(localDataWidget_p);
-            varNameLabel->setGeometry(45 + nameLabelWidth_ + 5 + (count * (nameValueBlockWidth_ + 45)) ,
-                                                                10 + (count * (valueLabelHeight_ + 10)),
-                                                                valueLabelWidth_, valueLabelHeight_);
-            varValueLabel->setText(varDefaultValue);
-            varValueLabel->setObjectName((varName +QStringLiteral("Value")));
+        QLineEdit * varValueLabel = new QLineEdit(localDataWidget_p);
+        varValueLabel->setGeometry(45 + nameLabelWidth_ + 5 + (xShift * (nameValueBlockWidth_ + 45)) ,
+                                                            10 + (yShift * (valueLabelHeight_ + 10)),
+                                                            valueLabelWidth_, valueLabelHeight_);
+        varValueLabel->setText(varDefaultValue);
+        varValueLabel->setObjectName((varName +QStringLiteral("Value")));
+        varValueLabel->show();
 
-            localNameLabelList_.push_back(varName);
-            localValueEditList_.push_back(varValueLabel);
-        }
+        localNameLabelList_.push_back(varName);
+        localValueEditList_.push_back(varValueLabel);
 
         ++count;
     }
+
+    dataViewTabWidget_p->addTab(localDataWidget_p, "TCP Server Data");
+    dataViewTabWidget_p->addTab(rawDataWidget_p, "TCP Raw Data");
+    localDataWidget_p->show();
+    dataViewTabWidget_p->show();
 }
 
 
 void HPMainWidget::updateWidget(const QStringList& dataList)
 {
+    qDebug() << "inside updateWidget : " << dataList.size() << "              " << dataList << endl;
     if(dataList.size() == localValueEditList_.size())
     {
         for(int i = 0; i < localValueEditList_.size(); i++)
@@ -183,7 +220,24 @@ void HPMainWidget::updateWidget(const QStringList& dataList)
 
 void HPMainWidget::pushRawData(const QByteArray& byteArrayData)
 {
+    if(byteArrayData.size() < (defaultRawLabelCount_ * 2))
+    {
+        int labelIndex = 0;
+        int replaceShift = 0;
+        int replaceCount = 2;
+        QString labelStr;
+        QString replacedStr;
 
+        for(int i = 0; i < byteArrayData.size(); i++)
+        {
+            labelIndex = i / 2;
+            replaceShift = (i % 2) * 2;
+
+            labelStr = rawDataLabelList_[labelIndex]->text();
+            replacedStr = labelStr.replace(replaceShift, replaceCount, QString("%1").arg(byteArrayData[i] & 0xff, 0, 16));
+            rawDataLabelList_[labelIndex]->setText(replacedStr);
+        }
+    }
 }
 
 
@@ -207,13 +261,44 @@ QVector<QStringList> HPMainWidget::getDataList(void)
 }
 
 
-void HPMainWidget::slotConnectButtonReleased(void)
+QString HPMainWidget::getIPAddress(void) const
 {
-
+    return addressLEdit_p->text();
 }
 
 
-void HPMainWidget::slotRefreshTimeOut(void)
+QString HPMainWidget::getPort(void) const
 {
+    return portLEdit_p->text();
+}
+
+
+QString HPMainWidget::getConnectionType(void) const
+{
+    return connectionTypeComboBox_p->currentText();
+}
+
+
+int HPMainWidget::getRefreshTime(void) const
+{
+    int defaultTime = 1000;
+    if(refreshLEdit_p->text().toInt())
+    {
+        defaultTime = refreshLEdit_p->text().toInt();
+    }
+    return defaultTime;
+}
+
+
+void HPMainWidget::slotImportReleaed(void)
+{
+    QString importFileName;
+    importFileName= QFileDialog::getOpenFileName(this, QObject::tr("Open File"), "/home", "*.csv");
+
+    if(!importFileName.isEmpty())
+    {
+        emit singalRequestImport(importFileName);
+    }
 
 }
+

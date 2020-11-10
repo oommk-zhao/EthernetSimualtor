@@ -2,11 +2,15 @@
 #define HPMAINCONTROLLER_H
 
 #include <QObject>
+#include <QString>
 
+#include "hpnetworksocket.h"
+
+class HPNetworkDataModel;
 class HPImportExportObject;
 class HPMainWidget;
-class HPNetworkDataPackage;
-class HPNetworkSocket;
+class QTimer;
+
 
 /*
 
@@ -33,13 +37,24 @@ public:
 
     void showScreen(void);
 
+private slots:
+
+    void slotUpdateWidget(void);
+    void slotTryToConnect(void);
+    void slotTryToImport(QString fileName);
+    void slotTryToExport(void);
+
 private:
 
     void initialize(void);
 
+    HPNetworkSocket::HP_SOCKET_TYPE socketType_;
+    QTimer * refreshTimer_p;
+
     HPImportExportObject * improtExportObject_p;
     HPMainWidget * mainWidget_p;
     HPNetworkSocket * networkSocket_p;
+    HPNetworkDataModel * dataModel_p;
 
 };
 

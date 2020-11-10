@@ -1,4 +1,5 @@
 #include <QFile>
+#include <QDebug>
 
 #include "hpcsvoperator.h"
 
@@ -46,6 +47,7 @@ int HPCsvOperator::importConfigurationFile(const QString& fileName)
         while(!importFile.atEnd())
         {
             fileData = importFile.readLine();
+            fileData.replace("\n", "");
 
             if(!fileData.isEmpty())
             {
@@ -70,7 +72,7 @@ int HPCsvOperator::importConfigurationFile(const QString& fileName)
 
         if(!checkFileLegality(fileHeadAndEnd))
         {
-            retValue = -1;
+            retValue = -2;
         }
     }
 
@@ -78,7 +80,7 @@ int HPCsvOperator::importConfigurationFile(const QString& fileName)
     {
         if(!importData(toImportData.takeFirst(), toImportData))
         {
-            retValue = -1;
+            retValue = -3;
         }
     }
 
