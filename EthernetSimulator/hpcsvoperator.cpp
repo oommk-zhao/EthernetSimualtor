@@ -48,6 +48,7 @@ int HPCsvOperator::importConfigurationFile(const QString& fileName)
         {
             fileData = importFile.readLine();
             fileData.replace("\n", "");
+            fileData.replace("\r", "");
 
             if(!fileData.isEmpty())
             {

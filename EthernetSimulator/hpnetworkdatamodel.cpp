@@ -114,38 +114,39 @@ QStringList HPNetworkDataModel::getData(const QByteArray& networkData)
 {
     QStringList retDataList;
 
-    QString retStr;
-
-    int position = 0;
-    int charIndex = 0;
-
-    qDebug() << " dataTypeList     :  " << dataTypeList_.size() << endl;
-
-    for(HPDataType typeEnum : dataTypeList_)
+    if(!networkData.isEmpty())
     {
-        retStr.clear();
-        switch(typeEnum)
+        QString retStr;
+
+        int position = 0;
+        int charIndex = 0;
+
+        for(HPDataType typeEnum : dataTypeList_)
         {
-        case HS_UNSIGNED_8:
-        case HS_SIGNED_8: retStr = getStringData(typeEnum, networkData.mid(position, 1)); position += 1; break;
-        case HS_UNSIGNED_16:
-        case HS_SIGNED_16: retStr = getStringData(typeEnum, networkData.mid(position, 2)); position += 2; break;
-        case HS_UNSIGNED_32:
-        case HS_SIGNED_32: retStr = getStringData(typeEnum, networkData.mid(position, 4)); position += 4; break;
-        case HS_BOOL: retStr = getStringData(typeEnum, networkData.mid(position, 1)); position += 1; break;
-        case HS_CHAR: retStr = getStringData(typeEnum, networkData.mid(position, charTypeSizeList_[charIndex]));
-                      position += charTypeSizeList_[charIndex];
-                      charIndex++; break;
-        default: break;
-        }
+            retStr.clear();
+            switch(typeEnum)
+            {
+            case HS_UNSIGNED_8:
+            case HS_SIGNED_8: retStr = getStringData(typeEnum, networkData.mid(position, 1)); position += 1; break;
+            case HS_UNSIGNED_16:
+            case HS_SIGNED_16: retStr = getStringData(typeEnum, networkData.mid(position, 2)); position += 2; break;
+            case HS_UNSIGNED_32:
+            case HS_SIGNED_32: retStr = getStringData(typeEnum, networkData.mid(position, 4)); position += 4; break;
+            case HS_BOOL: retStr = getStringData(typeEnum, networkData.mid(position, 1)); position += 1; break;
+            case HS_CHAR: retStr = getStringData(typeEnum, networkData.mid(position, charTypeSizeList_[charIndex]));
+                          position += charTypeSizeList_[charIndex];
+                          charIndex++; break;
+            default: break;
+            }
 
-        qDebug() << "inside loop" << endl;
-        qDebug() << "Position : " << position << "         retStr  : " << retStr << endl;
+            qDebug() << "inside loop" << endl;
+            qDebug() << "Position : " << position << "         retStr  : " << retStr << endl;
 
 
-        if(!retStr.isEmpty())
-        {
-            retDataList.push_back(retStr);
+            if(!retStr.isEmpty())
+            {
+                retDataList.push_back(retStr);
+            }
         }
     }
 

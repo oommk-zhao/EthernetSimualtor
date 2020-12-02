@@ -118,6 +118,11 @@ void HPMainController::slotTryToExport(void)
 }
 
 
+void HPMainController::slotCheckTheValidity(void)
+{
+    mainWidget_p->checkTheValidity(networkSocket_p->getReceivedData());
+}
+
 void HPMainController::initialize(void)
 {
     mainWidget_p = new HPMainWidget();
@@ -129,6 +134,7 @@ void HPMainController::initialize(void)
 
     connect(mainWidget_p, SIGNAL(singalRequestImport(QString)), this, SLOT(slotTryToImport(QString)));
     connect(mainWidget_p, SIGNAL(signalRequestConnect()), this, SLOT(slotTryToConnect()));
+    connect(mainWidget_p, SIGNAL(signalRequestCheckValidity()), this, SLOT(slotCheckTheValidity()));
     connect(refreshTimer_p, SIGNAL(timeout()), this, SLOT(slotUpdateWidget()));
 
     /* Not used yet */

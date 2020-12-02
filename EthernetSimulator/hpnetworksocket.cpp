@@ -32,6 +32,11 @@ bool HPNetworkSocket::createConnection(const QString& address, const QString& po
     {
         if(serverObject_->listen(QHostAddress::Any, 6606))
         {
+            if(serverObject_->hasPendingConnections())
+            {
+                slotNewTcpConnected();
+            }
+
             connected = true;
             connect(serverObject_, SIGNAL(newConnection()), this, SLOT(slotNewTcpConnected()));
         }

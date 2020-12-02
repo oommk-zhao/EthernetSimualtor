@@ -43,6 +43,7 @@ private slots:
     void slotTryToConnect(void);
     void slotTryToImport(QString fileName);
     void slotTryToExport(void);
+    void slotCheckTheValidity(void);
 
 private:
 
